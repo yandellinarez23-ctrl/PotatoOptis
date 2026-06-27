@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PotatoOptis</title>
+  <link rel="icon" href="logo.png" type="image/png" />
+  <style>
+    :root {
+      --bg: #060606;
+      --panel: rgba(12, 12, 12, 0.78);
+      --panel-strong: rgba(17, 17, 17, 0.9);
+      --line: rgba(255, 255, 255, 0.12);
+      --text: #f5efe5;
+      --muted: #b4a58a;
+      --accent: #c48a3a;
+      --accent-soft: rgba(196, 138, 58, 0.18);
+      --shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+      --radius: 24px;
+    }
+
+    @font-face {
+      font-family: 'PotatoFont';
+      src: url('MiFuente.TTF') format('truetype');
+      font-display: swap;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; min-height: 100%; }
+    body {
+      font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif;
+      color: var(--text);
+      background: url('fondo.jpg') center/cover no-repeat fixed;
+      overflow-x: hidden;
+      overflow-y: auto;
+      position: relative;
+      line-height: 1.5;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(0,0,0,.74), rgba(0,0,0,.46));
+      backdrop-filter: blur(6px);
+      z-index: -2;
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at top, rgba(196,138,58,.14), transparent 45%);
+      z-index: -1;
+    }
+
+    .page-shell {
+      max-width: 1420px;
+      margin: 0 auto;
+      padding: 28px 24px 96px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .hero {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 16px 12px 8px;
+      background: rgba(6, 6, 6, 0.44);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(16px);
+    }
+
+    .hero img {
+      width: 92px;
+      height: 92px;
+      border-radius: 24px;
+      object-fit: cover;
+      box-shadow: 0 8px 24px rgba(0,0,0,.35);
+      border: 2px solid rgba(255,255,255,.1);
+    }
+
+    .brand {
+      margin: 12px 0 6px;
+      font-family: 'PotatoFont', serif;
+      font-size: clamp(2rem, 3.5vw, 2.8rem);
+      letter-spacing: 2px;
+      color: #f8e0a8;
+      text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000,
+                   0 0 12px rgba(196,138,58,.45);
+      -webkit-text-stroke: 1px rgba(0,0,0,.75);
+    }
+
+    .hero p { margin: 0; }
+    .subtitle { color: var(--muted); font-size: 1rem; }
+    .version { margin-top: 8px; color: #e6c687; font-size: .92rem; opacity: .9; }
+
+    .app-frame {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      gap: 18px;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .sidebar,
+    .content-area,
+    .upcoming-card,
+    .featured-card,
+    .panel-card,
+    .mobile-bottom-nav {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+    }
+
+    .sidebar {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 0;
+      max-height: 760px;
+      overflow: hidden;
+    }
+
+    .menu {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      overflow-y: auto;
+      padding-right: 4px;
+      min-height: 0;
+    }
+
+    .menu::-webkit-scrollbar { width: 6px; }
+    .menu::-webkit-scrollbar-thumb { background: rgba(196,138,58,.28); border-radius: 999px; }
+
+    .menu button {
+      border: 0;
+      border-radius: 14px;
+      padding: 13px 14px;
+      background: rgba(0,0,0,.32);
+      color: var(--text);
+      cursor: pointer;
+      text-align: left;
+      transition: transform .25s ease, background .25s ease, color .25s ease, box-shadow .25s ease;
+      font-weight: 600;
+      letter-spacing: .3px;
+    }
+
+    .menu button:hover {
+      background: rgba(0,0,0,.48);
+      transform: translateX(2px);
+    }
+
+    .menu button.active {
+      background: linear-gradient(135deg, rgba(196,138,58,.95), rgba(136,93,34,.96));
+      color: #fff8e8;
+      box-shadow: 0 12px 24px rgba(196,138,58,.22);
+    }
+
+    .sidebar-footer {
+      margin-top: 20px;
+      padding-top: 14px;
+      border-top: 1px solid rgba(255,255,255,.08);
+      color: var(--muted);
+      font-size: .88rem;
+      flex-shrink: 0;
+    }
+
+    .content-area {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+      padding: 16px;
+      min-height: 0;
+    }
+
+    .panel-card, .upcoming-card {
+      padding: 16px;
+    }
+
+    .panel-card { display: flex; flex-direction: column; min-height: 0; }
+    .panel-card .panel-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .panel-head h2 {
+      margin: 0;
+      font-size: 1.08rem;
+      color: #f2ddaa;
+    }
+
+    .panel-head .search-box {
+      flex: 1;
+      max-width: 280px;
+      padding: 10px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.1);
+      background: rgba(0,0,0,.32);
+      color: var(--text);
+      outline: none;
+    }
+
+    .panel-head .search-box::placeholder { color: #8e836c; }
+
+    .multiple-panels {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      min-height: 0;
+    }
+
+    .upcoming-card {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      min-height: 0;
+    }
+
+    .upcoming-card h3 { margin: 0; color: #f2ddaa; font-size: 1rem; }
+    .upcoming-card p { margin: 0; color: var(--muted); }
+    .upcoming-badge {
+      display: inline-flex;
+      width: fit-content;
+      padding: 7px 11px;
+      border-radius: 999px;
+      background: rgba(196,138,58,.16);
+      color: #f6cf8f;
+      font-size: .85rem;
+      font-weight: 700;
+      letter-spacing: .4px;
+    }
+
+    .panel-body {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      overflow: hidden;
+      min-height: 0;
+    }
+
+    .social-grid {
+      display: grid;
+      gap: 12px;
+    }
+
+    .social-card, .info-card, .program-card {
+      padding: 14px;
+      border-radius: 18px;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.08);
+    }
+
+    .social-card strong { display: block; margin-bottom: 6px; color: #f0d9a8; }
+    .social-card span { color: var(--muted); }
+
+    .program-card h3 { margin: 0 0 8px; color: #f0d9a8; }
+    .program-card p { margin: 0; color: var(--muted); }
+
+    .about-card p { margin: 0 0 8px; color: var(--muted); }
+    .editable-block {
+      border: 1px dashed rgba(196,138,58,.3);
+      border-radius: 16px;
+      padding: 12px;
+      background: rgba(0,0,0,.16);
+      color: var(--text);
+      min-height: 90px;
+      outline: none;
+    }
+
+    .games-panel {
+      max-height: 460px;
+      overflow-y: auto;
+      padding-right: 6px;
+    }
+
+    .games-panel::-webkit-scrollbar { width: 8px; }
+    .games-panel::-webkit-scrollbar-thumb { background: rgba(196,138,58,.35); border-radius: 999px; }
+
+    .game-card {
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 18px;
+      background: rgba(255,255,255,.04);
+      overflow: hidden;
+      margin-bottom: 10px;
+      transition: transform .25s ease, border-color .25s ease, background .25s ease;
+    }
+
+    .game-card:hover { transform: translateY(-2px); border-color: rgba(196,138,58,.28); }
+    .game-summary {
+      width: 100%;
+      border: 0;
+      background: transparent;
+      color: var(--text);
+      padding: 14px 14px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      text-align: left;
+      font-weight: 700;
+      font-size: 1rem;
+    }
+
+    .game-summary .title { display: flex; gap: 8px; align-items: center; }
+    .game-badge {
+      padding: 5px 9px;
+      border-radius: 999px;
+      font-size: .78rem;
+      background: rgba(196,138,58,.15);
+      color: #f4c977;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .game-body {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height .35s ease, padding .35s ease;
+      padding: 0 14px;
+    }
+
+    .game-card.open .game-body {
+      max-height: 1400px;
+      padding: 0 14px 14px;
+    }
+
+    .game-body img {
+      width: 100%;
+      height: 140px;
+      object-fit: cover;
+      border-radius: 14px;
+      margin-bottom: 10px;
+      border: 1px solid rgba(255,255,255,.08);
+    }
+
+    .game-meta { display: flex; flex-wrap: wrap; gap: 8px; color: var(--muted); font-size: .88rem; margin-bottom: 10px; }
+    .game-meta span { padding: 5px 8px; background: rgba(0,0,0,.2); border-radius: 999px; }
+    .pill-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+    .pill-btn {
+      border: 0;
+      border-radius: 999px;
+      padding: 8px 12px;
+      background: rgba(196,138,58,.16);
+      color: #f2d294;
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    .info-panel {
+      display: none;
+      margin-top: 12px;
+      border-radius: 16px;
+      border: 1px solid rgba(196,138,58,.24);
+      background: rgba(196,138,58,.1);
+      padding: 12px;
+    }
+
+    .info-panel.open { display: block; }
+    .info-panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+    .info-panel-header strong { color: #f4dca8; }
+    .info-panel-content { color: var(--muted); line-height: 1.6; }
+    .info-panel-close {
+      border: 0;
+      border-radius: 999px;
+      padding: 6px 10px;
+      background: rgba(255,255,255,.08);
+      color: var(--text);
+      cursor: pointer;
+      font-size: .86rem;
+    }
+
+    .version-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .version-item {
+      padding: 12px;
+      border-radius: 14px;
+      background: rgba(0,0,0,.2);
+      border: 1px solid rgba(255,255,255,.08);
+    }
+
+    .version-item h4 { margin: 0 0 4px; color: #f4dca8; }
+    .version-item p { margin: 4px 0; color: var(--muted); }
+    .version-item .download {
+      display: inline-flex;
+      margin-top: 4px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, rgba(196,138,58,.95), rgba(136,93,34,.95));
+      color: #fff;
+      text-decoration: none;
+      font-weight: 700;
+    }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.62);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .25s ease;
+      padding: 20px;
+      z-index: 50;
+    }
+
+    .modal.active { opacity: 1; pointer-events: auto; }
+    .modal-card {
+      width: min(760px, 100%);
+      max-height: 86vh;
+      overflow: auto;
+      border-radius: 24px;
+      padding: 18px;
+      background: var(--panel-strong);
+      border: 1px solid rgba(255,255,255,.1);
+      box-shadow: 0 24px 44px rgba(0,0,0,.45);
+      transform: translateY(12px) scale(.98);
+      transition: transform .25s ease;
+    }
+
+    .modal.active .modal-card { transform: translateY(0) scale(1); }
+    .modal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .modal-head h3 { margin: 0; color: #f2dca8; }
+    .modal-close {
+      border: 0;
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.08);
+      color: var(--text);
+      cursor: pointer;
+      font-size: 1rem;
+    }
+    .modal-body textarea {
+      width: 100%;
+      min-height: 120px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,.08);
+      background: rgba(0,0,0,.2);
+      color: var(--text);
+      padding: 12px;
+      resize: vertical;
+      margin-bottom: 12px;
+    }
+    .history-list { display: flex; flex-direction: column; gap: 8px; }
+    .history-item { padding: 10px 12px; border-radius: 12px; background: rgba(255,255,255,.04); color: var(--muted); }
+
+    .mobile-bottom-nav {
+      display: none;
+      position: sticky;
+      bottom: 0;
+      gap: 8px;
+      padding: 10px;
+      margin-top: 12px;
+      overflow-x: auto;
+    }
+
+    .mobile-bottom-nav button {
+      flex: 1;
+      min-width: 110px;
+      border: 0;
+      border-radius: 14px;
+      padding: 11px 10px;
+      background: rgba(0,0,0,.28);
+      color: var(--text);
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .mobile-bottom-nav button.active { background: linear-gradient(135deg, rgba(196,138,58,.95), rgba(136,93,34,.96)); }
+
+    @media (max-width: 980px) {
+      .content-area { grid-template-columns: 1fr; }
+      .upcoming-card { order: 2; }
+      .panel-card { order: 1; }
+    }
+
+    @media (max-width: 800px) {
+      body { overflow: auto; }
+      .page-shell { padding: 16px 12px 90px; }
+      .app-frame { grid-template-columns: 1fr; }
+      .sidebar { display: none; }
+      .content-area { padding: 12px; }
+      .panel-head { flex-direction: column; align-items: stretch; }
+      .panel-head .search-box { max-width: none; }
+      .mobile-bottom-nav { display: flex; }
+      .games-panel { max-height: 420px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { transition: none !important; animation: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-shell">
+    <header class="hero">
+      <img src="logo.png" alt="PotatoOptis" />
+      <h1 class="brand">PotatoOptis</h1>
+      <p class="subtitle">Optimización para juegos y programas</p>
+      <p class="version">Versión 1.0</p>
+    </header>
+
+    <div class="app-frame">
+      <aside class="sidebar">
+        <nav class="menu" id="desktopMenu"></nav>
+        <div class="sidebar-footer">
+          <strong>PotatoOptis</strong><br />
+          Pagina Oficial, Juegos Optimizados
+        </div>
+      </aside>
+
+      <main class="content-area">
+        <section class="panel-card">
+          <div class="panel-head">
+            <h2 id="panelTitle">Redes Sociales</h2>
+            <input id="searchInput" class="search-box" type="text" placeholder="Buscar proyectos..." />
+          </div>
+          <div class="panel-body" id="panelContent"></div>
+        </section>
+
+        <section class="multiple-panels">
+          <div class="upcoming-card">
+            <div class="upcoming-badge">🚧 Próximamente</div>
+            <h3>Minecraft Potato</h3>
+            <p>Próxima optimización en desarrollo para una experiencia más fluida y estable.</p>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <nav class="mobile-bottom-nav" id="mobileMenu"></nav>
+  </div>
+
+  <script>
+    const menuItems = [
+      { key: 'socials', label: 'Redes Sociales' },
+      { key: 'games', label: 'Juegos' },
+      { key: 'programs', label: 'Programas' },
+      { key: 'about', label: 'Acerca de' }
+    ];
+
+    const games = [
+      {
+        id: 1,
+        title: 'GTA San Andreas',
+        label: '🟢 NUEVO',
+        image: 'gta.png',
+        description: 'GTA San Andreas, optimizado para un rendimiento más fluido en laptops con componentes viejos. Cada versión está pensada según tus componentes. Version Potato: esta versión es la más equilibrada, recomendada para las laptops de bajos recursos en general. GTA Potato Ultra: es la versión más acortada y optimizada posible, hecha para PCs ya de muy bajos recursos y muy viejas. GTA Potato Plus: es la versión más pasable visualmente y con algunos modpacks, incluyendo algunas modificaciones como calles, armas, árboles y cosas así.',
+        published: '15/03/2024',
+        updated: '06/06/2026',
+        state: '✔ Estable',
+        infoText: 'GTA San Andreas, optimizado para un rendimiento más fluido en laptops con componentes viejos. Cada versión está pensada según tus componentes. Version Potato: esta versión es la más equilibrada, recomendada para las laptops de bajos recursos en general. GTA Potato Ultra: es la versión más acortada y optimizada posible, hecha para PCs ya de muy bajos recursos y muy viejas. GTA Potato Plus: es la versión más pasable visualmente y con algunos modpacks, incluyendo algunas modificaciones como calles, armas, árboles y cosas así.',
+        versions: [
+          { name: '🥔 Potato Ultra', description: 'Es la versión más acortada y optimizada posible, hecha para PCs ya de muy bajos recursos y muy viejas.', weight: '1.2 GB', link: '#' },
+          { name: '🥔 Potato', description: 'Esta versión es la más equilibrada, recomendada para las laptops de bajos recursos en general.', weight: '780 MB', link: '#' },
+          { name: '🥔 Potato Plus', description: 'Es la versión más pasable visualmente y con algunos modpacks, incluyendo calles, armas, árboles y otras modificaciones.', weight: '540 MB', link: '#' }
+        ]
+      },
+      {
+        id: 2,
+        title: 'Minecraft',
+        label: '� PRÓXIMAMENTE',
+        image: 'logo.png',
+        description: 'Pack de ajustes, visuales más limpios y menor impacto de FPS para partidas largas.',
+        published: '21/02/2025',
+        updated: '11/06/2026',
+        state: '🧪 Beta',
+        versions: [
+          { name: '🥔 Potato Ultra', description: 'Ideal para PCs con recursos limitados.', weight: '860 MB', link: '#' },
+          { name: '🥔 Potato', description: 'Opción recomendada para uso diario.', weight: '610 MB', link: '#' }
+        ]
+      },
+      {
+        id: 3,
+        title: 'CS 1.6',
+        label: '� PRÓXIMAMENTE',
+        image: 'gta.png',
+        description: 'Optimización clásica para mejorar el rendimiento en servidores y partidas rápidas.',
+        published: '04/08/2023',
+        updated: '02/05/2026',
+        state: '✔ Estable',
+        versions: [
+          { name: '🥔 Potato Ultra', description: 'Máximo rendimiento sin perder estabilidad.', weight: '470 MB', link: '#' },
+          { name: '🥔 Potato', description: 'Opción simple y rápida.', weight: '330 MB', link: '#' }
+        ]
+      },
+    ];
+
+    const state = {
+      activeSection: 'socials',
+      openGame: null,
+      infoOpenGame: null,
+      search: ''
+    };
+
+    const desktopMenu = document.getElementById('desktopMenu');
+    const mobileMenu = document.getElementById('mobileMenu');
+    const panelTitle = document.getElementById('panelTitle');
+    const panelContent = document.getElementById('panelContent');
+    const searchInput = document.getElementById('searchInput');
+    function renderMenu() {
+      const html = menuItems.map(item => `<button class="${state.activeSection === item.key ? 'active' : ''}" data-section="${item.key}">${item.label}</button>`).join('');
+      desktopMenu.innerHTML = html;
+      mobileMenu.innerHTML = html;
+    }
+
+    function renderSocials() {
+      panelTitle.textContent = 'Redes Sociales';
+      searchInput.style.display = 'none';
+      panelContent.innerHTML = `
+        <div class="social-grid">
+          <div class="social-card"><strong>YouTube</strong><span>PotatoOptis</span></div>
+          <div class="social-card"><strong>Discord</strong><span>potatooptis</span></div>
+          <div class="social-card"><strong>Gmail</strong><span>potatooptis@gmail.com</span></div>
+          <div class="social-card"><strong>TikTok</strong><span>Próximamente</span></div>
+        </div>
+      `;
+    }
+
+    function renderPrograms() {
+      panelTitle.textContent = 'Programas';
+      searchInput.style.display = 'none';
+      panelContent.innerHTML = `
+        <div class="program-card">
+          <h3>Próximamente</h3>
+          <p>Nada más por ahora. Esta sección se actualizará cuando haya nuevas optimizaciones disponibles.</p>
+        </div>
+      `;
+    }
+
+    function renderAbout() {
+      panelTitle.textContent = 'Acerca de';
+      searchInput.style.display = 'none';
+      panelContent.innerHTML = `
+        <div class="about-card">
+          <div class="social-card">
+            <strong>PotatoOptis</strong>
+            <p>PotatoOptis nace como una identidad dedicada a crear optimizaciones limpias, eficientes y fáciles de usar para juegos y programas.</p>
+            <div class="editable-block" contenteditable="false">PotatoOptis nace como una idea de comunidad inspirada en la pasión por hacer que más personas puedan disfrutar el gaming, incluso con PCs con recursos limitados. La meta es demostrar que no hace falta una máquina potente para disfrutar juegos y programas de forma más fluida, cómoda y accesible. Aquí compartimos optimizaciones, consejos, mejoras y contenido pensado para ayudar a que quienes tienen equipos modestos también puedan disfrutar experiencias mejores.</div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderGames() {
+      panelTitle.textContent = 'Juegos';
+      searchInput.style.display = 'block';
+      const filtered = games.filter(game => game.title.toLowerCase().includes(state.search.toLowerCase()));
+
+      panelContent.innerHTML = `
+        <div class="games-panel">
+          ${filtered.length ? filtered.map(game => `
+            <article class="game-card ${state.openGame === game.id ? 'open' : ''}">
+              <button class="game-summary" type="button" data-game-id="${game.id}">
+                <span class="title">▶ ${game.title}</span>
+                <span class="game-badge">${game.label}</span>
+              </button>
+              <div class="game-body">
+                <img src="${game.image}" alt="${game.title}" />
+                <p>${game.description}</p>
+                <div class="game-meta">
+                  <span>📅 Publicado: ${game.published}</span>
+                  <span>🔄 Actualizado: ${game.updated}</span>
+                  <span>${game.state}</span>
+                </div>
+                <div class="pill-row">
+                  <button class="pill-btn" type="button" data-action="info" data-game-id="${game.id}">Info</button>
+                </div>
+                <div class="info-panel ${state.infoOpenGame === game.id ? 'open' : ''}">
+                  <div class="info-panel-header">
+                    <strong>Información del proyecto</strong>
+                    <button class="info-panel-close" type="button" data-action="hide-info" data-game-id="${game.id}">Ocultar</button>
+                  </div>
+                  <div class="info-panel-content">${game.infoText || 'Información del proyecto disponible para editar en el HTML.'}</div>
+                </div>
+                ${game.label.includes('PRÓXIMAMENTE') ? '' : `<div class="version-list">${game.versions.map(version => `
+                    <div class="version-item">
+                      <h4>${version.name}</h4>
+                      <p>${version.description}</p>
+                      <p>💾 Peso: ${version.weight}</p>
+                      <a class="download" href="${version.link}">Descargar</a>
+                    </div>
+                  `).join('')}</div>`}
+              </div>
+            </article>
+          `).join('') : '<div class="social-card"><strong>No se encontraron proyectos.</strong><span>Prueba con otro término.</span></div>'}
+        </div>
+      `;
+    }
+
+    function renderPanel() {
+      if (state.activeSection === 'socials') return renderSocials();
+      if (state.activeSection === 'programs') return renderPrograms();
+      if (state.activeSection === 'about') return renderAbout();
+      return renderGames();
+    }
+
+    desktopMenu.addEventListener('click', (event) => {
+      const button = event.target.closest('button[data-section]');
+      if (!button) return;
+      state.activeSection = button.dataset.section;
+      state.openGame = null;
+      renderMenu();
+      renderPanel();
+    });
+
+    mobileMenu.addEventListener('click', (event) => {
+      const button = event.target.closest('button[data-section]');
+      if (!button) return;
+      state.activeSection = button.dataset.section;
+      state.openGame = null;
+      renderMenu();
+      renderPanel();
+    });
+
+    panelContent.addEventListener('click', (event) => {
+      const gameButton = event.target.closest('button[data-game-id]');
+      if (gameButton && !gameButton.dataset.action) {
+        const gameId = Number(gameButton.dataset.gameId);
+        state.openGame = state.openGame === gameId ? null : gameId;
+        renderGames();
+        return;
+      }
+
+      const infoButton = event.target.closest('button[data-action="info"]');
+      if (infoButton) {
+        const gameId = Number(infoButton.dataset.gameId);
+        state.infoOpenGame = state.infoOpenGame === gameId ? null : gameId;
+        renderGames();
+        return;
+      }
+
+      const hideInfoButton = event.target.closest('button[data-action="hide-info"]');
+      if (hideInfoButton) {
+        state.infoOpenGame = null;
+        renderGames();
+        return;
+      }
+    });
+
+    searchInput.addEventListener('input', (event) => {
+      state.search = event.target.value;
+      renderGames();
+    });
+
+    renderMenu();
+    renderPanel();
+  </script>
+</body>
+</html>
